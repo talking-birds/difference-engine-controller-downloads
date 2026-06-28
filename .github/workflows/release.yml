@@ -50,7 +50,7 @@ jobs:
           for OS in windows macos; do
             netsparkle-generate-appcast \
             -b "binaries/$OS" \
-            -n "The Difference Engine"
+            -n "The Difference Engine" \
             -a . \
             -o "$OS" \
             -e zip \
