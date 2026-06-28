@@ -1,7 +1,12 @@
 name: Generate Appcast XML
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g., v0.9.3)'
+        required: true
+        type: string
   release:
     types: [published]
 
@@ -9,7 +14,8 @@ permissions:
   contents: write
 
 env:
-  DOWNLOAD_BASE: https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}
+  TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
+  DOWNLOAD_BASE: https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag_name || github.event.release.tag_name }}
 
 jobs:
   publish-appcast:
@@ -26,11 +32,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download "${{ github.event.release.tag_name }}" \
+          gh release download "${{ env.TAG_NAME }}" \
             --pattern "DifferenceEngine-windows.zip" \
             --dir binaries/windows
 
-          gh release download "${{ github.event.release.tag_name }}" \
+          gh release download "${{ env.TAG_NAME }}" \
             --pattern "DifferenceEngine-macos.zip" \
             --dir binaries/macos
 
@@ -65,7 +71,7 @@ jobs:
           if git diff --cached --exit-code; then
             echo "No changes to appcast files"
           else
-            git commit -m "Update appcast for release ${{ github.event.release.tag_name }}"
+            git commit -m "Update appcast for release ${{ env.TAG_NAME }}"
             git push
           fi
 
