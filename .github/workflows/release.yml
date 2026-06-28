@@ -11,7 +11,13 @@ on:
     types: [published]
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "appcast"
+  cancel-in-progress: false
 
 env:
   TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
@@ -21,6 +27,12 @@ jobs:
   publish-appcast:
     name: Generate Appcast XML
     runs-on: ubuntu-latest
+    
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,29 +59,34 @@ jobs:
         run: |
           VERSION="${TAG_NAME#v}"
 
+          mkdir -p appcast
+          # Download existing appcast files from GitHub Pages so --reparse-existing can append to them
+          curl -s -L -f -o appcast/appcast.xml "https://talking-birds.github.io/difference-engine-controller-downloads/appcast.xml" || echo "No existing appcast.xml found"
+          curl -s -L -f -o appcast/appcast.xml.signature "https://talking-birds.github.io/difference-engine-controller-downloads/appcast.xml.signature" || echo "No existing appcast.xml.signature found"
+
           for OS in windows macos; do
             netsparkle-generate-appcast \
-            -b "binaries/$OS" \
-            -n "The Difference Engine" \
-            -a . \
-            -o "$OS" \
-            -e zip \
-            --file-version "$VERSION" \
-            --reparse-existing \
-            --signature-file-extension signature \
-            -u "$DOWNLOAD_BASE" \
-            --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}" \
-            --public-key-override "${{ vars.NETSPARKLE_PUBLIC_KEY }}"
+              -b "binaries/$OS" \
+              -n "The Difference Engine" \
+              -a appcast \
+              -o "$OS" \
+              -e zip \
+              --file-version "$VERSION" \
+              --reparse-existing \
+              --signature-file-extension signature \
+              -u "$DOWNLOAD_BASE" \
+              --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}" \
+              --public-key-override "${{ vars.NETSPARKLE_PUBLIC_KEY }}"
           done
 
-      - name: Commit and push updated appcast.xml
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add appcast.xml appcast.xml.signature
-          if git diff --cached --exit-code; then
-            echo "No changes to appcast files"
-          else
-            git commit -m "Update appcast for release ${{ env.TAG_NAME }}"
-            git push
-          fi
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'appcast'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
