@@ -64,6 +64,8 @@ jobs:
           curl -s -L -f -o appcast/appcast.xml "https://talking-birds.github.io/difference-engine-controller-downloads/appcast.xml" || echo "No existing appcast.xml found"
           curl -s -L -f -o appcast/appcast.xml.signature "https://talking-birds.github.io/difference-engine-controller-downloads/appcast.xml.signature" || echo "No existing appcast.xml.signature found"
 
+          # Here we could start to prune old items if the XML was getting too big
+
           for OS in windows macos; do
             netsparkle-generate-appcast \
               -b "binaries/$OS" \
