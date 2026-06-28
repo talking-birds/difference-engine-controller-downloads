@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>The Difference Engine</title>
+    <description>Most recent changes with links to updates</description>
+    <language>en</language>
+    <item>
+      <title>The Difference Engine 0.9.3</title>
+      <pubDate>Sun, 28 Jun 2026 21:45:36 +00:00</pubDate>
+      <sparkle:version>0.9.3</sparkle:version>
+      <sparkle:shortVersionString>0.9.3</sparkle:shortVersionString>
+      <enclosure url="https://github.com/talking-birds/difference-engine-controller-downloads/releases/download/v0.9.3/DifferenceEngine-windows.zip" sparkle:version="0.9.3" sparkle:shortVersionString="0.9.3" length="42998229" sparkle:os="windows" type="application/octet-stream" sparkle:criticalUpdate="false" sparkle:signature="q5nP6NEd310iF2easlp72V3pQvlOSqeHT92n3iul0qv4sngioBBIx83m6VARmtGeqIHX9h/3aCKA0QYga9RhBw==" />
+    </item>
+    <item>
+      <title>The Difference Engine 0.9.3</title>
+      <pubDate>Sun, 28 Jun 2026 21:45:37 +00:00</pubDate>
+      <sparkle:version>0.9.3</sparkle:version>
+      <sparkle:shortVersionString>0.9.3</sparkle:shortVersionString>
+      <enclosure url="https://github.com/talking-birds/difference-engine-controller-downloads/releases/download/v0.9.3/DifferenceEngine-macos.zip" sparkle:version="0.9.3" sparkle:shortVersionString="0.9.3" length="76267734" sparkle:os="macos" type="application/zip" sparkle:criticalUpdate="false" sparkle:signature="cGJoaoDq+j6C8tRWsCxPibvyqDPJt6FQJx2lLlA1Z+aqfjcA2ZV7YE+tNSXn4G3bzmx2neRUp6uLYBx8QMoGCg==" />
+    </item>
+  </channel>
+</rss>
