@@ -45,15 +45,13 @@ jobs:
 
       - name: Generate/Update AppCast XML
         run: |
-          echo "${{ secrets.NETSPARKLE_PRIVATE_KEY }}" > netsparkle_key.priv
-
           netsparkle-generate-appcast \
             -b binaries/windows \
             -a . \
             -o windows \
             --signature-file-extension signature \
             -u "$DOWNLOAD_BASE" \
-            -k netsparkle_key.priv
+            --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}"
 
           netsparkle-generate-appcast \
             -b binaries/macos \
@@ -61,7 +59,7 @@ jobs:
             -o mac \
             --signature-file-extension signature \
             -u "$DOWNLOAD_BASE" \
-            -k netsparkle_key.priv
+            --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}"
 
       - name: Commit and push updated appcast.xml
         run: |
@@ -74,7 +72,3 @@ jobs:
             git commit -m "Update appcast for release ${{ env.TAG_NAME }}"
             git push
           fi
-
-      - name: Clean up private key
-        if: always()
-        run: rm -f netsparkle_key.priv
