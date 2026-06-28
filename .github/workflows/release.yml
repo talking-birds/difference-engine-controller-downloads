@@ -1,0 +1,71 @@
+name: Generate Appcast XML
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  DOWNLOAD_BASE: https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}
+
+jobs:
+  publish-appcast:
+    name: Generate Appcast XML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create local directories for binaries
+        run: mkdir -p binaries/windows binaries/macos
+
+      - name: Download release assets
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern "DifferenceEngine-windows.zip" \
+            --dir binaries/windows
+
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern "DifferenceEngine-macos.zip" \
+            --dir binaries/macos
+
+      - name: Install NetSparkle AppCast Generator
+        run: dotnet tool install --global NetSparkleUpdater.Tools.AppCastGenerator
+
+      - name: Generate/Update AppCast XML
+        run: |
+          echo "${{ secrets.NETSPARKLE_PRIVATE_KEY }}" > netsparkle_key.priv
+
+          netsparkle-generate-appcast \
+            -b binaries/windows \
+            -a . \
+            -o windows \
+            --signature-file-extension signature \
+            -u "$DOWNLOAD_BASE" \
+            -k netsparkle_key.priv
+
+          netsparkle-generate-appcast \
+            -b binaries/macos \
+            -a . \
+            -o mac \
+            --signature-file-extension signature \
+            -u "$DOWNLOAD_BASE" \
+            -k netsparkle_key.priv
+
+      - name: Commit and push updated appcast.xml
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add appcast.xml appcast.xml.signature
+          if git diff --cached --exit-code; then
+            echo "No changes to appcast files"
+          else
+            git commit -m "Update appcast for release ${{ github.event.release.tag_name }}"
+            git push
+          fi
+
+      - name: Clean up private key
+        if: always()
+        run: rm -f netsparkle_key.priv
