@@ -47,27 +47,20 @@ jobs:
         run: |
           VERSION="${TAG_NAME#v}"
 
-          netsparkle-generate-appcast \
-            -b binaries/windows \
+          for OS in windows macos; do
+            netsparkle-generate-appcast \
+            -b "binaries/$OS" \
+            -n "The Difference Engine"
             -a . \
-            -o windows \
+            -o "$OS" \
             -e zip \
             --file-version "$VERSION" \
             --reparse-existing \
             --signature-file-extension signature \
             -u "$DOWNLOAD_BASE" \
-            --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}"
-
-          netsparkle-generate-appcast \
-            -b binaries/macos \
-            -a . \
-            -o macos \
-            -e zip \
-            --file-version "$VERSION" \
-            --reparse-existing \
-            --signature-file-extension signature \
-            -u "$DOWNLOAD_BASE" \
-            --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}"
+            --private-key-override "${{ secrets.NETSPARKLE_PRIVATE_KEY }}" \
+            --public-key-override "${{ vars.NETSPARKLE_PUBLIC_KEY }}"
+          done
 
       - name: Commit and push updated appcast.xml
         run: |
